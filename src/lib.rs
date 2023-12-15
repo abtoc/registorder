@@ -77,6 +77,18 @@ impl<K, V> Default for RegistOrderMap<K, V> {
     }
 }
 
+impl<K, V, const N: usize> From<[(K, V); N]> for RegistOrderMap<K, V>
+where
+    K: Eq + Copy,
+    V: Copy,
+{
+    fn from(arr: [(K, V); N]) -> Self {
+        Self {
+            entries: arr.iter().map(|e| Entry{ key:  e.0, val: e.1 }).collect(),
+        }
+    }
+}
+
 pub struct Iter<'a, K: 'a, V: 'a> {
     inner: std::slice::Iter<'a, Entry<K, V>>,
 }
@@ -199,6 +211,16 @@ mod tests {
         let mut iter = map.iter();
         assert_eq!(iter.next(), Some((&key2, &20)));
         assert_eq!(iter.next(), Some((&key1, &10)));
+    }
+    #[test]
+    fn test_from() {
+        let map = RegistOrderMap::from([
+            ("key2", 20),
+            ("key1", 10),
+        ]);
+        let mut iter = map.iter();
+        assert_eq!(iter.next(), Some((&"key2", &20)));
+        assert_eq!(iter.next(), Some((&"key1", &10)));
     }
 
     #[cfg(feature = "serde")]
