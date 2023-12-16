@@ -89,6 +89,24 @@ where
     }
 }
 
+impl<K: std::fmt::Debug, V: std::fmt::Debug> std::fmt::Debug for Entry<K, V> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Entry")
+            .field("key", &self.key)
+            .field("val", &self.val)
+            .finish()
+    }
+}
+
+impl<K: std::fmt::Debug, V: std::fmt::Debug> std::fmt::Debug for RegistOrderMap<K, V> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_list()
+            .entries(self.entries.iter())
+            .finish()
+    }
+}
+
+
 pub struct Iter<'a, K: 'a, V: 'a> {
     inner: std::slice::Iter<'a, Entry<K, V>>,
 }
@@ -212,6 +230,7 @@ mod tests {
         assert_eq!(iter.next(), Some((&key2, &20)));
         assert_eq!(iter.next(), Some((&key1, &10)));
     }
+
     #[test]
     fn test_from() {
         let map = RegistOrderMap::from([
@@ -221,6 +240,19 @@ mod tests {
         let mut iter = map.iter();
         assert_eq!(iter.next(), Some((&"key2", &20)));
         assert_eq!(iter.next(), Some((&"key1", &10)));
+    }
+
+    #[test]
+    fn test_debug() {
+        let key1 = "key1".to_string();
+        let key2 = "key2".to_string();
+        let mut map = RegistOrderMap::new();
+        map.insert(key2.clone(), 20);
+        map.insert(key1.clone(), 10);
+        assert_eq!(
+            format!("{:?}", map),
+            r#"[Entry { key: "key2", val: 20 }, Entry { key: "key1", val: 10 }]"#
+        );
     }
 
     #[cfg(feature = "serde")]
