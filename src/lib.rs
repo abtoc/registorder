@@ -1,12 +1,11 @@
 #[cfg(feature = "serde")]
+use serde::de::{Deserialize, Deserializer, MapAccess, Visitor};
+#[cfg(feature = "serde")]
 use serde::ser::{Serialize, SerializeMap, Serializer};
 #[cfg(feature = "serde")]
-use serde::de::{Deserialize, Deserializer, Visitor, MapAccess};
-#[cfg(feature = "serde")]
 use std::marker::PhantomData;
-#[cfg(feature = "serde")]
-use std::fmt;
 
+#[derive(Clone)]
 struct Entry<K, V> {
     key: K,
     val: V,
@@ -15,10 +14,26 @@ struct Entry<K, V> {
 /// An `RegistOrderMap` is like a `std::collections::HashMap`,
 /// but it is sorted according to the key in descending order.
 /// The `RegistOrderMap` is a `HashMap` with guaranteed registration order.
-/// 
-/// * Examples
-/// ```rust
+///
+/// # Examples
+///
 /// ```
+/// use registorder_map::RegistOrderMap;
+///
+/// let mut map = RegistOrderMap::new();
+///
+///  map.insert(
+///    "key2".to_string(),
+///    "value2".to_string(),
+///  );
+///  map.insert(
+///    "key1".to_string(),
+///    "value1".to_string(),
+///  );
+///
+///  aa
+/// ```
+#[derive(Clone)]
 pub struct RegistOrderMap<K, V> {
     entries: Vec<Entry<K, V>>,
 }
@@ -29,13 +44,13 @@ impl<K, V> RegistOrderMap<K, V> {
     }
     fn find(&self, k: &K) -> Option<usize>
     where
-        K: Eq
+        K: Eq,
     {
         self.entries.iter().position(|e| e.key == *k)
     }
     pub fn get(&self, k: &K) -> Option<&V>
     where
-        K: Eq
+        K: Eq,
     {
         match self.find(k) {
             Some(i) => Some(&self.entries[i].val),
@@ -44,10 +59,10 @@ impl<K, V> RegistOrderMap<K, V> {
     }
     pub fn insert(&mut self, k: K, v: V)
     where
-        K: Eq
+        K: Eq,
     {
         match self.find(&k) {
-            None => self.entries.push(Entry { key: k, val: v}),
+            None => self.entries.push(Entry { key: k, val: v }),
             Some(i) => self.entries[i].val = v,
         }
     }
@@ -84,7 +99,7 @@ where
 {
     fn from(arr: [(K, V); N]) -> Self {
         Self {
-            entries: arr.iter().map(|e| Entry{ key:  e.0, val: e.1 }).collect(),
+            entries: arr.iter().map(|e| Entry { key: e.0, val: e.1 }).collect(),
         }
     }
 }
@@ -106,7 +121,6 @@ impl<K: std::fmt::Debug, V: std::fmt::Debug> std::fmt::Debug for RegistOrderMap<
     }
 }
 
-
 pub struct Iter<'a, K: 'a, V: 'a> {
     inner: std::slice::Iter<'a, Entry<K, V>>,
 }
@@ -115,25 +129,25 @@ impl<'a, K: 'a, V: 'a> Iterator for Iter<'a, K, V>
 where
     K: Eq,
 {
-    type Item = (&'a K,  &'a V);
+    type Item = (&'a K, &'a V);
 
     fn next(&mut self) -> Option<Self::Item> {
         match self.inner.next() {
             None => None,
-            Some(entry) => Some((&entry.key, &entry.val))
+            Some(entry) => Some((&entry.key, &entry.val)),
         }
     }
 }
 
 #[cfg(feature = "serde")]
-impl<K, V> Serialize  for RegistOrderMap<K, V>
+impl<K, V> Serialize for RegistOrderMap<K, V>
 where
     K: Serialize + Eq,
     V: Serialize,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-            S: Serializer,
+        S: Serializer,
     {
         let mut map = serializer.serialize_map(Some(self.len()))?;
         for (k, v) in self.iter() {
@@ -145,7 +159,7 @@ where
 
 #[cfg(feature = "serde")]
 struct RegistOrderMapVisitor<K, V> {
-    marker: PhantomData<fn() -> RegistOrderMap<K, V>>
+    marker: PhantomData<fn() -> RegistOrderMap<K, V>>,
 }
 
 #[cfg(feature = "serde")]
@@ -165,7 +179,7 @@ where
 {
     type Value = RegistOrderMap<K, V>;
 
-    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
         formatter.write_str("a very special map")
     }
 
@@ -233,10 +247,7 @@ mod tests {
 
     #[test]
     fn test_from() {
-        let map = RegistOrderMap::from([
-            ("key2", 20),
-            ("key1", 10),
-        ]);
+        let map = RegistOrderMap::from([("key2", 20), ("key1", 10)]);
         let mut iter = map.iter();
         assert_eq!(iter.next(), Some((&"key2", &20)));
         assert_eq!(iter.next(), Some((&"key1", &10)));
