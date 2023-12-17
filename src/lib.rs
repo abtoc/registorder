@@ -14,31 +14,14 @@ struct Entry<K, V> {
 /// An `RegistOrderMap` is like a `std::collections::HashMap`,
 /// but it is sorted according to the key in descending order.
 /// The `RegistOrderMap` is a `HashMap` with guaranteed registration order.
-///
-/// # Examples
-///
-/// ```
-/// use registorder_map::RegistOrderMap;
-///
-/// let mut map = RegistOrderMap::new();
-///
-///  map.insert(
-///    "key2".to_string(),
-///    "value2".to_string(),
-///  );
-///  map.insert(
-///    "key1".to_string(),
-///    "value1".to_string(),
-///  );
-///
-///  aa
-/// ```
+/// I have only implemented the minimum required methods, so please request them if you have any requests.
 #[derive(Clone)]
 pub struct RegistOrderMap<K, V> {
     entries: Vec<Entry<K, V>>,
 }
 
 impl<K, V> RegistOrderMap<K, V> {
+    /// Creates an empty RegistOrderMap.
     pub fn new() -> Self {
         Default::default()
     }
@@ -48,6 +31,7 @@ impl<K, V> RegistOrderMap<K, V> {
     {
         self.entries.iter().position(|e| e.key == *k)
     }
+    /// Returns a ref2erence to the value corresponding to the key.
     pub fn get(&self, k: &K) -> Option<&V>
     where
         K: Eq,
@@ -57,6 +41,7 @@ impl<K, V> RegistOrderMap<K, V> {
             None => None,
         }
     }
+    /// Inserts a key-value pair into the map.
     pub fn insert(&mut self, k: K, v: V)
     where
         K: Eq,
@@ -66,16 +51,24 @@ impl<K, V> RegistOrderMap<K, V> {
             Some(i) => self.entries[i].val = v,
         }
     }
+    /// Returns true if the map contains no elements.
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.entries.is_empty()
+    }
+    /// An iterator visiting all key-value pairs in arbitrary order. The iterator element type is `(&'a K, &'a V)`.
     #[inline]
     pub fn iter(&self) -> Iter<'_, K, V> {
         Iter {
             inner: self.entries.iter(),
         }
     }
+    /// Returns the number of elements in the map.
     #[inline]
     pub fn len(&self) -> usize {
         self.entries.len()
     }
+    /// Creates an empty `RegistOrderMap` with at least the specified capacity.
     #[inline]
     pub fn with_capacity(capacity: usize) -> Self {
         Self {
