@@ -1,7 +1,12 @@
 [package]
 name = "registorder-map"
 version = "0.1.0"
+authors = ["Toshio Abe<abtoc88@gmail.con>"]
 edition = "2021"
+description = "This map guarantees the order of registration."
+license = "MIT"
+homepage = "https://github.com/abtoc/registorder-map.git"
+repository = "https://github.com/abtoc/registorder-map.git"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
